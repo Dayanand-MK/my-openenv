@@ -1,0 +1,73 @@
+name: email-triage-env
+version: "1.0.0"
+description: >
+  An OpenEnv environment that trains and evaluates AI agents on real-world
+  email handling tasks: classification, prioritisation, and reply drafting.
+author: "Team"
+tags:
+  - openenv
+  - email
+  - triage
+  - nlp
+  - real-world
+
+environment:
+  class: EmailTriageEnv
+  module: environment
+
+entry_point: "server:main"
+
+observation_space:
+  type: object
+  description: >
+    Typed EmailTriageObservation containing the active task id, a list of
+    email objects (id, subject, sender, body, timestamp), a natural-language
+    instruction, current step, max steps, and optional feedback from the
+    previous step.
+
+action_space:
+  type: object
+  description: >
+    Typed EmailTriageAction. For task1 supply classifications (dict).
+    For task2 supply priority_order (list). For task3 supply reply (dict).
+
+reward:
+  type: float
+  range: [0.0, 1.0]
+  description: >
+    Partial-credit reward at every step. Rewards accurate classifications,
+    correct ranking, and well-structured empathetic replies.
+    Penalises wasted steps and clearly wrong behaviour.
+
+tasks:
+  - id: task1
+    name: Email Classification
+    difficulty: easy
+    description: >
+      Classify 8 emails into one of spam | urgent | billing | support | general.
+    max_steps: 3
+
+  - id: task2
+    name: Inbox Prioritisation
+    difficulty: medium
+    description: >
+      Rank 10 emails from most urgent to least urgent.
+    max_steps: 4
+
+  - id: task3
+    name: Professional Reply Drafting
+    difficulty: hard
+    description: >
+      Identify the complaint email and draft a professional, empathetic reply
+      with acknowledgement, apology, next steps, and a resolution timeline.
+    max_steps: 5
+
+endpoints:
+  reset: POST /reset
+  step:  POST /step
+  state: GET  /state
+
+baseline_scores:
+  task1: 0.72
+  task2: 0.61
+  task3: 0.55
